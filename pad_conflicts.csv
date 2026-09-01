@@ -1,0 +1,51 @@
+department,conflict_cause,score
+Operations,Communication,2
+HR,Resource Allocation,5
+Logistics,Resource Allocation,7
+Logistics,Communication,6
+Operations,Communication,6
+Operations,Communication,7
+Finance,Communication,6
+HR,Resource Allocation,1
+Logistics,Resource Allocation,5
+Logistics,Communication,7
+HR,Leadership,5
+Logistics,Resource Allocation,9
+Finance,Communication,6
+HR,Communication,8
+HR,Communication,7
+Operations,Resource Allocation,7
+Logistics,Resource Allocation,5
+Finance,Communication,5
+Finance,Leadership,6
+Finance,Communication,2
+Operations,Communication,3
+Operations,Leadership,1
+HR,Communication,6
+Logistics,Leadership,4
+Logistics,Resource Allocation,1
+Operations,Communication,6
+Logistics,Communication,6
+Finance,Resource Allocation,6
+Logistics,Communication,4
+HR,Leadership,5
+HR,Communication,5
+HR,Resource Allocation,6
+HR,Communication,4
+HR,Leadership,5
+Logistics,Communication,6
+Logistics,Resource Allocation,2
+HR,Resource Allocation,1
+Logistics,Resource Allocation,8
+Operations,Leadership,5
+Finance,Resource Allocation,1
+Finance,Resource Allocation,3
+Operations,Communication,5
+HR,Leadership,8
+Logistics,Resource Allocation,7
+Logistics,Resource Allocation,2
+Operations,Resource Allocation,1
+Operations,Communication,6
+HR,Leadership,3
+Logistics,Resource Allocation,9
+HR,Communication,6
