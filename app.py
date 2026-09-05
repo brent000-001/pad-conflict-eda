@@ -48,7 +48,7 @@ if st.button("Predict Severity"):
     elif score <= 6:
         pred = "Medium"
     else:
-        pred = "High
+        pred = "High"
 
     # Check if outlier
     is_outlier = clf.predict([[score]])[0] == -1
