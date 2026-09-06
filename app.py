@@ -2,68 +2,90 @@ import streamlit as st
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, IsolationForest
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.metrics import accuracy_score, classification_report
 
 st.set_page_config(page_title="PAD Conflict Analysis", layout="wide")
-st.title("📊 PAD Conflict Analysis Dashboard")
+st.title("📊 PAD Conflict Analysis - Final Pipeline")
 
 df = pd.read_csv("pad_conflicts.csv")
+st.write(f"Dataset: {df.shape[0]} rows, {df.shape[1]} columns")
+st.dataframe(df.head())
 
-X = pd.get_dummies(df[['department','conflict_cause']])
+# --- 1. FINAL PIPELINE ---
+st.divider()
+st.header("1. Train-Test Split & Pipeline")
+
+X = df[['department','conflict_cause']]
 y = df['score']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-clf = RandomForestClassifier(random_state=42)
-clf.fit(X_train, y_train)
-cols = X.columns.tolist()
 
-iso = IsolationForest(contamination=0.05, random_state=42)
-df['anomaly'] = iso.fit_predict(X)
+# Proper pipeline: Encode + Model
+preprocess = ColumnTransformer(
+    transformers=[('cat', OneHotEncoder(handle_unknown='ignore'), ['department','conflict_cause'])]
+)
 
-# --- CHARTS ---
-st.header("📈 Charts")
+pipeline = Pipeline(steps=[
+    ('preprocess', preprocess),
+    ('model', RandomForestClassifier(random_state=42))
+])
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+pipeline.fit(X_train, y_train)
+y_pred = pipeline.predict(X_test)
+acc = accuracy_score(y_test, y_pred)
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Train Size", f"{len(X_train)} ({80}%)")
+col2.metric("Test Size", f"{len(X_test)} ({20}%)")
+col3.metric("Accuracy", f"{acc*100:.1f}%")
+
+st.code(f"""
+Train: {len(X_train)} samples
+Test: {len(X_test)} samples
+Accuracy: {acc:.2f}
+""")
+
+with st.expander("Classification Report"):
+    st.text(classification_report(y_test, y_pred))
+
+# --- 2. CHARTS ---
+st.divider()
+st.header("2. Charts")
 c1, c2 = st.columns(2)
-
 with c1:
     st.subheader("Conflicts by Department")
-    dept_count = df['department'].value_counts()
-    st.bar_chart(dept_count)
-
+    st.bar_chart(df['department'].value_counts())
 with c2:
     st.subheader("Average Score by Department")
-    avg_score = df.groupby('department')['score'].mean().sort_values(ascending=False)
-    st.bar_chart(avg_score)
+    st.bar_chart(df.groupby('department')['score'].mean())
 
 st.subheader("Conflict Causes Distribution")
-cause_count = df['conflict_cause'].value_counts()
-st.bar_chart(cause_count)
+st.bar_chart(df['conflict_cause'].value_counts())
 
-# --- PREDICTION FORM ---
+# --- 3. PREDICTION (Using Final Pipeline) ---
 st.divider()
-st.header("🔮 Predict Conflict Score")
-col1, col2 = st.columns(2)
-with col1:
+st.header("3. 🔮 Prediction - Final Pipeline")
+d1, d2 = st.columns(2)
+with d1:
     dept = st.selectbox("Department", sorted(df['department'].unique()))
-with col2:
+with d2:
     cause = st.selectbox("Conflict Cause", sorted(df['conflict_cause'].unique()))
 
 if st.button("Predict Score", type="primary"):
-    input_df = pd.DataFrame([[dept, cause]], columns=['department','conflict_cause'])
-    input_encoded = pd.get_dummies(input_df)
-    for c in cols:
-        if c not in input_encoded:
-            input_encoded[c] = 0
-    input_encoded = input_encoded[cols]
-    pred = clf.predict(input_encoded)[0]
+    pred = pipeline.predict(pd.DataFrame([[dept, cause]], columns=['department','conflict_cause']))[0]
     st.success(f"Predicted Score: **{pred}** for {dept} - {cause}")
     if pred >= 8:
-        st.warning("⚠️ High risk conflict!")
+        st.warning("⚠️ High Risk")
     elif pred >= 5:
-        st.info("Moderate risk")
+        st.info("Moderate Risk")
+    else:
+        st.info("Low Risk")
 
-# --- OUTLIERS ---
+# --- 4. OUTLIERS ---
 st.divider()
-st.subheader("⚠️ Outliers Detected")
-st.write(f"Found **{(df['anomaly']==-1).sum()} outliers** out of {len(df)}")
-st.dataframe(df[df['anomaly']==-1][['department','conflict_cause','score']], use_container_width=True)
+st.header("4. ⚠️ Outlier Detection")
 
-with st.expander("Show all data"):
-    st.dataframe(df, use_container_width=True)
+# For outliers we need encoded version
