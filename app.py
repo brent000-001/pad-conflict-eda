@@ -44,16 +44,17 @@ def train():
     y = df['severity']
 
     from sklearn.model_selection import train_test_split
-    from sklearn.preprocessing import StandardScaler
+       X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-
-   from sklearn.ensemble import RandomForestClassifier
-
+    from sklearn.ensemble import RandomForestClassifier
     clf = RandomForestClassifier(random_state=42)
     clf.fit(X_train, y_train)
     return clf, X.columns.tolist(), df
 
+clf, cols, df = train()
+from sklearn.ensemble import IsolationForest
+iso = IsolationForest(contamination=0.05, random_state=42)
+df['anomaly'] = iso.fit_predict(pd.get_dummies(df[['department','conflict_cause']]))
 clf, cols, df = train()
 from sklearn.ensemble import IsolationForest
 iso = IsolationForest(contamination=0.05, random_state=42)
