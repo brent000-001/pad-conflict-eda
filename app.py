@@ -48,20 +48,21 @@ def train():
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
-    # Scaling - fit ONLY on train
-    scaler = StandardScaler()
-    scaler.fit(X_train)
+   from sklearn.ensemble import RandomForestClassifier
 
-    # Outlier detection - fit ONLY on train for no leakage
-    clf = IsolationForest(contamination=0.05, random_state=42)
-    clf.fit(X_train)
-    df['anomaly'] = clf.fit_predict(X)
+    clf = RandomForestClassifier(random_state=42)
+    clf.fit(X_train, y_train)
+    return clf, X.columns.tolist(), df
 
 clf, cols, df = train()
+from sklearn.ensemble import IsolationForest
+iso = IsolationForest(contamination=0.05, random_state=42)
+df['anomaly'] = iso.fit_predict(pd.get_dummies(df[['department','conflict_cause']]))
 
 # 1. OUTLIERS SECTION
 st.subheader("⚠️ Outliers Detected")
 st.write(f"Found {(df['anomaly']==-1).sum()} outliers out of {len(df)}")
+st.dataframe(df[df['anomaly']==-1][['department','conflict_cause','score']])
 st.dataframe(df[df['anomaly']==-1][['department','conflict_cause','score','severity']])
 
 st.divider()
