@@ -88,4 +88,11 @@ if st.button("Predict Score", type="primary"):
 st.divider()
 st.header("4. ⚠️ Outlier Detection")
 
+import io
+from datetime import date
+buffer = io.BytesIO()
+with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+    df.to_excel(writer, index=False)
+st.download_button("📥 Download Weekly Report for HR Director", buffer.getvalue(), f"PAD_Report_{date.today()}.xlsx")
+
 # For outliers we need encoded version
