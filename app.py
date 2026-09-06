@@ -25,21 +25,30 @@ def show_vif():
 
 #... rest of your code, start with def train()...
 
+
 def train():
     show_vif()
-    df = load_data()
-    # Features for anomaly detection
-       # SCALING
-    from sklearn.preprocessing import StandardScaler
-    scaler = StandardScaler()
-    features = scaler.fit_transform(df[['score']].copy())
+
+    # FIX LEAKAGE - create target once
+    df['severity'] = pd.cut(df['score'], bins=[0,3,6,10], labels=["Low","Medium","High"])
     
-    # IsolationForest - detect 5% outliers
+    # Features = ONLY department + cause (NOT score)
+    X = pd.get_dummies(df[['department','conflict_cause']])
+    y = df['severity']
+
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+    # Scaling - fit ONLY on train
+    scaler = StandardScaler()
+    scaler.fit(X_train)
+
+    # Outlier detection - fit ONLY on train for no leakage
     clf = IsolationForest(contamination=0.05, random_state=42)
-    df['anomaly'] = clf.fit_predict(features)
-    df['severity'] = pd.cut(df['score'], bins=[0,3,6,10], labels=['Low','Medium','High'])
-    cols = ['score']
-    return clf, cols, df
+    clf.fit(X_train)
+    df['anomaly'] = clf.fit_predict(X)
 
 clf, cols, df = train()
 
