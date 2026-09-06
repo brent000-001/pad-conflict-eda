@@ -1,5 +1,9 @@
 import streamlit as st
 import pandas as pd
+import os, glob
+csv_file = glob.glob("**/*.csv", recursive=True)[0]
+df = pd.read_csv(csv_file)
+print(f"Loaded {csv_file}")
 from sklearn.ensemble import IsolationForest
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from sklearn.preprocessing import StandardScaler
@@ -27,8 +31,10 @@ def show_vif():
 
 
 def train():
-    global df
     show_vif()
+
+    # FIX LEAKAGE - create target once
+    df['severity'] = pd.cut(df['score'], bins=[0,3,6,10], labels=["Low","Medium","High"])
 
     # FIX LEAKAGE - create target once
     df['severity'] = pd.cut(df['score'], bins=[0,3,6,10], labels=["Low", "Medium", "High"])
