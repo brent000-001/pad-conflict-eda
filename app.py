@@ -28,7 +28,11 @@ def train():
     show_vif()
     df = load_data()
     # Features for anomaly detection
-    features = df[['score']].copy()
+       # SCALING
+    from sklearn.preprocessing import StandardScaler
+    scaler = StandardScaler()
+    features = scaler.fit_transform(df[['score']].copy())
+    
     # IsolationForest - detect 5% outliers
     clf = IsolationForest(contamination=0.05, random_state=42)
     df['anomaly'] = clf.fit_predict(features)
@@ -41,10 +45,18 @@ clf, cols, df = train()
 # 1. OUTLIERS SECTION
 st.subheader("⚠️ Outliers Detected")
 st.write(f"Found {(df['anomaly']==-1).sum()} outliers out of {len(df)}")
-st.dataframe(df[df['anomaly']==-1][['department','conflict_cause','score','anomaly','severity']])
+st.dataframe(df[df['anomaly']==-1][['department','conflict_cause','score','severity']])
 
 st.divider()
 
+# 1b. CLASS IMBALANCE + SCALING
+st.subheader("⚖️ Class Imbalance & Scaling")
+st.write("Severity distribution:")
+st.write(df['severity'].value_counts())
+st.bar_chart(df['severity'].value_counts())
+st.caption("Treatment: StandardScaler applied + class_weight='balanced' to handle minority 'High' class")
+
+st.divider()
 # 2. PREDICTION FORM - NEW
 st.subheader("🔮 Predict Conflict Severity")
 
