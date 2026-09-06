@@ -1,18 +1,31 @@
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import IsolationForest
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 st.set_page_config(page_title="PAD Conflict Analysis - Yaounde", layout="wide")
-st.title("📊 PAD Conflict Analysis - Yaounde")
-st.write("Final Project - Conflict Severity Predictor (Model Ready)")
-st.success("EDA Visualization Complete ✅ | Now Predictive Module Active")
+st.title("PAD Conflict Analysis - Yaounde")
+st.subheader("Final Project - Conflict Severity Predictor (Model Ready)")
+st.success("EDA Visualization Complete ✅ | New Predictive Module Active")
 
 @st.cache_data
 def load_data():
     df = pd.read_csv("pad_conflicts.csv")
     return df
 
+def show_vif():
+    df = load_data()
+    X_numeric = pd.get_dummies(df[['department', 'conflict_cause', 'score']], drop_first=True)
+    vif_data = pd.DataFrame()
+    vif_data["Feature"] = X_numeric.columns
+    vif_data["VIF"] = [variance_inflation_factor(X_numeric.values, i) for i in range(X_numeric.shape[1])]
+    st.subheader("Multicollinearity Check (VIF)")
+    st.dataframe(vif_data) 
+
+#... rest of your code, start with def train()...
+
 def train():
+    show_vif()
     df = load_data()
     # Features for anomaly detection
     features = df[['score']].copy()
