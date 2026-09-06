@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestClassifier, IsolationForest
 st.title("PAD Conflict Analysis")
 
 # CHANGE THIS TO YOUR REAL CSV NAME
-df = pd.read_csv("conflict_data.csv") # <--- check name in GitHub!
+df = pd.read_csv("pad-conflict.csv") # <--- check name in GitHub!
 
 X = pd.get_dummies(df[['department','conflict_cause']])
 y = df['severity']
