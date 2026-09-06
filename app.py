@@ -29,10 +29,9 @@ def show_vif():
 def train():
     global df
     show_vif()
-    df = pd.read_csv("pad_conflict.csv") # <- use your real file name
 
     # FIX LEAKAGE - create target once
-    df['severity'] = pd.cut(df['score'], bins=[0,3,6,10], labels=["Low","Medium","High"])
+    df['severity'] = pd.cut(df['score'], bins=[0,3,6,10], labels=["Low", "Medium", "High"])
     
     # Features = ONLY department + cause (NOT score)
     X = pd.get_dummies(df[['department','conflict_cause']])
