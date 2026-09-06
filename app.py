@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 from statsmodels.stats.outliers_influence import variance_inflation_factor
+from sklearn.preprocessing import StandardScaler
 
 st.set_page_config(page_title="PAD Conflict Analysis - Yaounde", layout="wide")
 st.title("PAD Conflict Analysis - Yaounde")
