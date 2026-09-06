@@ -6,9 +6,16 @@ from sklearn.ensemble import RandomForestClassifier, IsolationForest
 st.title("PAD Conflict Analysis")
 
 # CHANGE THIS TO YOUR REAL CSV NAME
-df = pd.read_csv("pad-conflict.csv") # <--- check name in GitHub!
+import os
+st.write("Files in repo:", os.listdir(".")) # will show real csv name
 
-X = pd.get_dummies(df[['department','conflict_cause']])
+# try both possible names
+import pathlib
+for name in ["pad-conflicts.csv", "pad_conflicts.csv", "PAD-conflicts.csv", "pad-conflicts-eda.csv"]:
+    if pathlib.Path(name).exists():
+        df = pd.read_csv(name)
+        st.write(f"Using file: {name}")
+        break
 y = df['severity']
 
 from sklearn.model_selection import train_test_split
