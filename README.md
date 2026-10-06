@@ -23,5 +23,6 @@ streamlit run app.py
 Lawong Brent
 Data Analyst| Researcher| Political Scientist| Yaounde
 lawongbrentbayebimela@gmail.com
+GitHub: GitHub.com/brent000-001/pad-conflict-eda
 brent000-001 | Yaoundé, CM | Sept 2026
 GitHub: github.com/brent000-001/pad-conflict-eda
