@@ -1,4 +1,6 @@
 # PAD Conflict Analysis - Yaoundé | End-to-End HR Dashboard
+Problem: HR at Port Authority had 50 conflict cases with no way to prioritize severity
+Solution:I built a dash that classifies severity and lets the HR export reports in 1-click.
 
 🚀 **Live App:** https://pad-conflict-eda-fgjg3s3appwxib4wvrpa3c.streamlit.app/
 
@@ -18,5 +20,8 @@ pip install -r requirements.txt
 streamlit run app.py
 
 ## 👤 Author
+Lawong Brent
+Data Analyst| Researcher| Political Scientist| Yaounde
+lawongbrentbayebimela@gmail.com
 brent000-001 | Yaoundé, CM | Sept 2026
 GitHub: github.com/brent000-001/pad-conflict-eda
