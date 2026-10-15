@@ -20,12 +20,10 @@ df['Has_Conflict'] = df['score'].apply(lambda x: 1 if x >=5 else 0)
 st.write("My columns are:", df.columns.tolist()) # <--- ADD THIS LINE
 
 st.write(f"Dataset: {df.shape[0]} rows, {df.shape[1]} columns")
-
-st.write(f"Dataset: {df.shape[0]} rows, {df.shape[1]} columns")
 st.dataframe(df.head())
 st.divider()
 st.header("1. Train-Test Split & Pipeline")
-X = df[['department','conflict_cause','tenure','job_level']]
+X = df[['department','conflict_cause']]
 y = df['Has_Conflict']
 
 preprocess = ColumnTransformer(
