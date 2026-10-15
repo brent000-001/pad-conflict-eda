@@ -25,19 +25,20 @@ st.divider()
 st.header("1. Train-Test Split & Pipeline")
 X = df[['department','conflict_cause']]
 y = df['Has_Conflict']
+                           
+categorical_features = ['department','conflict_cause'] 
 
-preprocess = ColumnTransformer(
+preprocessor = ColumnTransformer(
     transformers=[
-        ('cat', OneHotEncoder(handle_unknown='ignore'), 
-         ['department','conflict_cause','job_level','tenure'])
-    ]
-)
-pipeline = Pipeline(steps=[
-    ('preprocess', preprocess),
-    ('model', RandomForestClassifier(random_state=42))
-])
+        ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features)
+    ])
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+pipeline = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('classifier', RandomForestClassifier(random_state=42))
+])
 
 pipeline.fit(X_train, y_train)
 y_pred = pipeline.predict(X_test)
