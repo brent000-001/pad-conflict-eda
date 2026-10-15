@@ -23,10 +23,25 @@ st.write(f"Dataset: {df.shape[0]} rows, {df.shape[1]} columns")
 st.dataframe(df.head())
 st.divider()
 st.header("1. Train-Test Split & Pipeline")
-X = df[['department','conflict_cause']]
+X = df.drop(columns=['score', 'Has_Conflict'])
 y = df['Has_Conflict']
-                           
-categorical_features = ['department','conflict_cause'] 
+
+# Auto-detect categorical vs numeric
+categorical_features = X.select_dtypes(include=['object']).columns.tolist()
+numeric_features = X.select_dtypes(exclude=['object']).columns.tolist()
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features),
+        ('num', 'passthrough', numeric_features)
+    ])
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+pipeline = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('classifier', RandomForestClassifier(n_estimators=300, max_depth=None, random_state=42, class_weight='balanced'))
+])
 
 preprocessor = ColumnTransformer(
     transformers=[
