@@ -14,7 +14,7 @@ st.title("📊 PAD Conflict Analysis - Final Pipeline")
 df = pd.read_csv("pad_conflicts.csv")
 
 # --- FIX: Group 8 classes into 2 to get to 90% ---
- df['Has_Conflict'] = df['score'].apply(lambda x: 1 if x >=5 else 0)
+df['Has_Conflict'] = df['score'].apply(lambda x: 1 if x >=5 else 0)
 
 st.write(f"Dataset: {df.shape[0]} rows, {df.shape[1]} columns")
 st.dataframe(df.head())
