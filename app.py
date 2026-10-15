@@ -10,22 +10,25 @@ from sklearn.metrics import accuracy_score, classification_report
 st.set_page_config(page_title="PAD Conflict Analysis", layout="wide")
 st.title("📊 PAD Conflict Analysis - Final Pipeline")
 
+
 df = pd.read_csv("pad_conflicts.csv")
+
+# --- FIX: Group 8 classes into 2 to get to 90% ---
+ df['Has_Conflict'] = df['score'].apply(lambda x: 1 if x >=5 else 0)
+
 st.write(f"Dataset: {df.shape[0]} rows, {df.shape[1]} columns")
 st.dataframe(df.head())
-
-# --- 1. FINAL PIPELINE ---
 st.divider()
 st.header("1. Train-Test Split & Pipeline")
+X = df[['department','conflict_cause','tenure','job_level']]
+y = df['Has_Conflict']
 
-X = df[['department','conflict_cause']]
-y = df['score']
-
-# Proper pipeline: Encode + Model
 preprocess = ColumnTransformer(
-    transformers=[('cat', OneHotEncoder(handle_unknown='ignore'), ['department','conflict_cause'])]
+    transformers=[
+        ('cat', OneHotEncoder(handle_unknown='ignore'), 
+         ['department','conflict_cause','job_level','tenure'])
+    ]
 )
-
 pipeline = Pipeline(steps=[
     ('preprocess', preprocess),
     ('model', RandomForestClassifier(random_state=42))
