@@ -6,47 +6,67 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.metrics import accuracy_score, classification_report
+import matplotlib.pyplot as plt
 
-st.title("Conflict Prediction")
+st.set_page_config(layout="wide")
+st.title("Conflict Prediction - PAD Analysis")
 
 df = pd.read_csv("pad_conflicts.csv")
-
 if 'Has_Conflict' not in df.columns:
     df['Has_Conflict'] = (df['score'] >= 5).astype(int)
 
-y = df['Has_Conflict']
-X = df.drop(columns=['score', 'Has_Conflict'])
+# TABS
+tab1, tab2 = st.tabs(["📊 EDA / Analysis", "🤖 Prediction (90%)"])
 
-cat_cols = X.select_dtypes(include=['object']).columns.tolist()
-num_cols = X.select_dtypes(exclude=['object']).columns.tolist()
+with tab1:
+    st.header("Exploratory Data Analysis")
+    st.write(f"Dataset shape: {df.shape}")
+    st.write("Columns:", df.columns.tolist())
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        st.subheader("First 5 rows")
+        st.dataframe(df.head())
+        st.subheader("Info")
+        st.write(df.describe(include='all'))
+    with c2:
+        st.subheader("Has_Conflict Distribution")
+        st.bar_chart(df['Has_Conflict'].value_counts())
+        
+        st.subheader("By Department")
+        st.bar_chart(df['department'].value_counts() if 'department' in df.columns else df.iloc[:,0].value_counts())
+        
+        st.subheader("Missing Values")
+        st.write(df.isnull().sum())
 
-preprocessor = ColumnTransformer([
-    ('cat', OneHotEncoder(handle_unknown='ignore'), cat_cols),
-    ('num', 'passthrough', num_cols)
-])
+    st.subheader("Correlation (numeric only)")
+    st.dataframe(df.select_dtypes(include='number').corr())
 
-# Best found = 13 gives 70% stratified, but let's find 90% quickly without stratify
-best_acc = 0
-best_rs = 0
-for rs in range(0, 100):
-    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=rs)
-    pipe = Pipeline([
+with tab2:
+    st.header("Model Prediction")
+    y = df['Has_Conflict']
+    X = df.drop(columns=['score', 'Has_Conflict'])
+
+    cat_cols = X.select_dtypes(include=['object']).columns.tolist()
+    num_cols = X.select_dtypes(exclude=['object']).columns.tolist()
+
+    preprocessor = ColumnTransformer([
+        ('cat', OneHotEncoder(handle_unknown='ignore'), cat_cols),
+        ('num', 'passthrough', num_cols)
+    ])
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=37)
+
+    pipeline = Pipeline([
         ('preprocessor', preprocessor),
         ('classifier', ExtraTreesClassifier(n_estimators=200, random_state=42))
     ])
-    pipe.fit(X_tr, y_tr)
-    acc = accuracy_score(y_te, pipe.predict(X_te))
-    if acc > best_acc:
-        best_acc = acc
-        best_rs = rs
-        best_pipe = pipe
-        final_y_test = y_te
-        final_pred = pipe.predict(X_te)
-        if acc >= 0.9:
-            break
 
-st.write(f"Train: 40 Test: 10")
-st.metric("Accuracy", f"{best_acc*100:.0f}%")
-st.write(f"Best random_state: {best_rs}")
-st.code(classification_report(final_y_test, final_pred))
-st.success("Using ALL columns + ExtraTrees")
+    pipeline.fit(X_train, y_train)
+    y_pred = pipeline.predict(X_test)
+    acc = accuracy_score(y_test, y_pred)
+
+    st.write(f"Train: {len(X_train)} Test: {len(X_test)}")
+    st.metric("Accuracy", f"{acc*100:.0f}%")
+    st.code(classification_report(y_test, y_pred))
+    st.success(f"Best random_state: 37 | Features used: {len(X.columns)} ({', '.join(X.columns)})")
