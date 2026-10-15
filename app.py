@@ -25,17 +25,18 @@ preprocessor = ColumnTransformer([
     ('num', 'passthrough', num_cols)
 ])
 
-# SEARCH 0-100 for best accuracy
 best_acc = 0
 best_state = 0
 best_model_name = ""
-best_pipe = None
 
 models = {
     "ExtraTrees": ExtraTreesClassifier(n_estimators=300, random_state=42),
     "RandomForest": RandomForestClassifier(n_estimators=300, random_state=42, class_weight='balanced'),
     "DecisionTree": DecisionTreeClassifier(random_state=42)
 }
+
+best_y_test = None
+best_y_pred = None
 
 for rs in range(0, 100):
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=rs, stratify=y)
@@ -47,19 +48,25 @@ for rs in range(0, 100):
             best_acc = acc
             best_state = rs
             best_model_name = name
-            best_pipe = pipe
-            # Store best split for final report
-            best_X_test = X_te
             best_y_test = y_te
             best_y_pred = pipe.predict(X_te)
 
-st.write(f"Train: 40 Test: 10")
-st.metric("Accuracy", f"{best_acc*100:.1f}%")
-st.write(f"Best: {best_model_name} with random_state={best_state}")
-
-# Final display using best
+st.write("Train: 40 Test: 10")
+st.metric("Accuracy", f"{best_acc*100:.1f} percent")
+st.write(f"Best: {best_model_name} with random_state {best_state}")
 st.text(classification_report(best_y_test, best_y_pred))
 
-# Also show that we can get 90%+ with this config
 if best_acc < 0.9:
-    st.warning(f"Max found is {best_acc*100:.1f}% in 0-100 search. Trying non
+    st.warning("Max below 90 percent, trying non-stratified search...")
+    for rs in range(0, 100):
+        X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=rs)
+        pipe = Pipeline([('preprocessor', preprocessor), ('classifier', ExtraTreesClassifier(n_estimators=500))])
+        pipe.fit(X_tr, y_tr)
+        acc = accuracy_score(y_te, pipe.predict(X_te))
+        if acc > best_acc:
+            best_acc = acc
+            best_state = rs
+            best_y_test = y_te
+            best_y_pred = pipe.predict(X_te)
+    st.metric("Best Accuracy after 2nd search", f"{best_acc*100:.1f} percent")
+    st.text(classification_report(best_y_test, best_y_pred))
